@@ -1,0 +1,21 @@
+__pycache__/
+*.pyc
+.env
+*.log
+
+# بيانات ومخرجات ما نرفعها GitHub
+*.xlsx
+*.xls
+*.csv
+*.json
+*.jsonl
+*.gdb/
+*.shp
+*.dbf
+*.shx
+*.prj
+*.cpg
+
+# مجلدات المخرجات
+output/
+logs/
