@@ -41,3 +41,26 @@ class RIPCClient:
         )
 
         return response
+
+    def is_token_expired(self, response):
+
+        if response.status_code in [401, 407]:
+            return True
+
+        try:
+            data = response.json()
+            msg = str(data).lower()
+
+            if "login again" in msg:
+                return True
+
+            if "token" in msg and "expired" in msg:
+                return True
+
+            if "username and the password does not match" in msg:
+                return True
+
+        except Exception:
+            pass
+
+        return False
