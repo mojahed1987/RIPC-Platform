@@ -1,17 +1,14 @@
 import os
 import re
 import json
-import pandas as pd
 from datetime import datetime
 
 from core.auth.otp_auth import get_token
 from core.requests.client import RIPCClient
 from core.utils.save import save_json, save_excel
+from core.database.save_to_db import save_restriction_exceptions
 
 
-# ==================================================
-# PATHS
-# ==================================================
 BASE_DIR = r"C:\RIPC_NEW\القيود\طلبات_الرخص_استثناء_الحظر"
 OUTPUT_DIR = os.path.join(BASE_DIR, "outputs")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -22,10 +19,6 @@ JSON_PATH = os.path.join(OUTPUT_DIR, f"restriction_requests_{TODAY}.json")
 EXCEL_PATH = os.path.join(OUTPUT_DIR, f"restriction_requests_{TODAY}.xlsx")
 
 
-# ==================================================
-# REQUEST IDS
-# ضع هنا أرقام الطلبات فقط
-# ==================================================
 raw_ids = """
 63053
 63430
@@ -46,9 +39,6 @@ raw_ids = """
 """
 
 
-# ==================================================
-# HELPERS
-# ==================================================
 def clean_request_ids(raw_text):
     ids = re.findall(r"\d+", raw_text)
     return list(dict.fromkeys(ids))
@@ -75,19 +65,13 @@ def flatten_json(data, parent_key="", sep="_"):
 
 def extract_data(response_json):
     if isinstance(response_json, dict):
-        if "data" in response_json:
-            return response_json.get("data")
-        return response_json
+        return response_json.get("data", response_json)
 
     return response_json
 
 
-# ==================================================
-# API FUNCTIONS
-# عدل endpoint حسب رابط API الصحيح عندك
-# ==================================================
 def get_request_details(client, request_id):
-    endpoint = f"/gateway/ps-be/v3/api/restriction-request/{request_id}"
+    endpoint = f"/prmt-be/V2/api/unblocking/permit/{request_id}"
 
     response = client.get(endpoint)
 
@@ -128,12 +112,9 @@ def get_request_details(client, request_id):
         }
 
 
-# ==================================================
-# MAIN
-# ==================================================
 def main():
     print("=" * 60)
-    print("RIPC Restriction Requests")
+    print("RIPC Restriction Exception Requests")
     print("=" * 60)
 
     token = get_token()
@@ -164,11 +145,13 @@ def main():
 
     save_json(results, JSON_PATH)
     save_excel(results, EXCEL_PATH)
+    save_restriction_exceptions(results)
 
     print("=" * 60)
     print("DONE")
     print(JSON_PATH)
     print(EXCEL_PATH)
+    print("DATABASE: restriction_exceptions")
     print("=" * 60)
 
 
